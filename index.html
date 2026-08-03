@@ -133,8 +133,8 @@
 
         <!-- Audio Toggle Button -->
         <button id="audio-toggle" onclick="toggleAmbientAudio()" class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-gold-300/50 text-wine-800 text-xs font-semibold hover:bg-wine-50 transition shadow-sm">
-            <i id="audio-icon" class="fas fa-volume-mute text-gold-600"></i>
-            <span id="audio-label" class="hidden sm:inline">Música Sacra</span>
+            <i id="audio-icon" class="fas fa-volume-up text-gold-600 animate-pulse"></i>
+            <span id="audio-label" class="inline">HEKAL</span>
         </button>
     </header>
 
@@ -596,16 +596,13 @@
                     : "fas fa-volume-mute text-stone-400";
             }
             if (label) {
-                label.textContent = playing ? "Música Activa" : "Música Sacra";
+                label.textContent = "HEKAL";
             }
         }
 
         function toggleAmbientAudio() {
             if (bgAudio.paused) {
-                bgAudio.play().then(() => {
-                    isAudioPlaying = true;
-                    updateAudioUI(true);
-                });
+                playAmbientAudio(false);
             } else {
                 pauseAmbientAudio();
             }
@@ -616,13 +613,10 @@
             // Reproducir de inmediato desde el principio (segundo 0)
             playAmbientAudio(true);
 
-            // Respaldo de activación en caso de restricciones estrictas del navegador
+            // Respaldo de activación en caso de restricciones del navegador
             const unlockAudio = () => {
                 if (bgAudio.paused) {
-                    bgAudio.play().then(() => {
-                        isAudioPlaying = true;
-                        updateAudioUI(true);
-                    }).catch(() => {});
+                    playAmbientAudio(false);
                 }
             };
 
