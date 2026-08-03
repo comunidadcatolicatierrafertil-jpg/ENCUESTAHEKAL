@@ -561,61 +561,30 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        let audioCtx = null;
+        const AUDIO_URL = "https://raw.githubusercontent.com/comunidadcatolicatierrafertil-jpg/audiohekal/main/0803.MP3";
+        const bgAudio = new Audio(AUDIO_URL);
+        bgAudio.loop = true;
+        bgAudio.preload = "auto";
         let isAudioPlaying = false;
-        let masterGain = null;
-        let osc1 = null;
-        let osc2 = null;
 
-        function initAudioContext() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-
-                // Master gain with soft volume
-                masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-
-                // Low pass filter for soft warm tone
-                const filter = audioCtx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(320, audioCtx.currentTime);
-
-                // Two warm sine oscillators for chord pad
-                osc1 = audioCtx.createOscillator();
-                osc2 = audioCtx.createOscillator();
-
-                osc1.type = 'sine';
-                osc2.type = 'sine';
-
-                // Tuned to calm meditative interval (D3 & A3)
-                osc1.frequency.setValueAtTime(146.83, audioCtx.currentTime); 
-                osc2.frequency.setValueAtTime(220.00, audioCtx.currentTime); 
-
-                osc1.connect(filter);
-                osc2.connect(filter);
-                filter.connect(masterGain);
-                masterGain.connect(audioCtx.destination);
-
-                osc1.start();
-                osc2.start();
+        function playAmbientAudio(startFromBeginning = false) {
+            if (startFromBeginning) {
+                bgAudio.currentTime = 0;
             }
-        }
-
-        function playAmbientAudio() {
-            try {
-                initAudioContext();
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                if (masterGain) {
-                    masterGain.gain.setTargetAtTime(0.06, audioCtx.currentTime, 1);
-                }
+            bgAudio.play().then(() => {
                 isAudioPlaying = true;
                 updateAudioUI(true);
-            } catch (e) {
-                console.log("Esperando interacción para reproducir audio:", e);
-            }
+            }).catch(e => {
+                console.log("El navegador restringió el autoplay directo, se activará en la primera interacción:", e);
+                isAudioPlaying = false;
+                updateAudioUI(false);
+            });
+        }
+
+        function pauseAmbientAudio() {
+            bgAudio.pause();
+            isAudioPlaying = false;
+            updateAudioUI(false);
         }
 
         function updateAudioUI(playing) {
@@ -632,33 +601,34 @@
         }
 
         function toggleAmbientAudio() {
-            if (!isAudioPlaying) {
-                playAmbientAudio();
+            if (bgAudio.paused) {
+                bgAudio.play().then(() => {
+                    isAudioPlaying = true;
+                    updateAudioUI(true);
+                });
             } else {
-                if (masterGain && audioCtx) {
-                    masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
-                }
-                isAudioPlaying = false;
-                updateAudioUI(false);
+                pauseAmbientAudio();
             }
         }
 
-        // Activación automática al cargar y/o al primer toque/clic
+        // Activación automática inmediata desde el inicio sin necesidad de clic manual
         function setupAutoAudio() {
-            playAmbientAudio();
+            // Reproducir de inmediato desde el principio (segundo 0)
+            playAmbientAudio(true);
 
-            const startOnInteraction = () => {
-                if (!isAudioPlaying) {
-                    playAmbientAudio();
+            // Respaldo de activación en caso de restricciones estrictas del navegador
+            const unlockAudio = () => {
+                if (bgAudio.paused) {
+                    bgAudio.play().then(() => {
+                        isAudioPlaying = true;
+                        updateAudioUI(true);
+                    }).catch(() => {});
                 }
-                window.removeEventListener('click', startOnInteraction);
-                window.removeEventListener('touchstart', startOnInteraction);
-                window.removeEventListener('keydown', startOnInteraction);
             };
 
-            window.addEventListener('click', startOnInteraction);
-            window.addEventListener('touchstart', startOnInteraction);
-            window.addEventListener('keydown', startOnInteraction);
+            ['click', 'touchstart', 'pointerdown', 'keydown', 'mousemove', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, unlockAudio, { passive: true });
+            });
         }
 
         const canvas = document.getElementById('particle-canvas');
