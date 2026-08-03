@@ -9,7 +9,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://googleapis.com" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -62,6 +62,7 @@
         .font-cinzel { font-family: 'Cinzel', serif; }
         .font-serif { font-family: 'Playfair Display', serif; }
 
+        /* Background Particle Canvas */
         #particle-canvas {
             position: fixed;
             top: 0;
@@ -72,6 +73,7 @@
             pointer-events: none;
         }
 
+        /* Glassmorphism Card Style */
         .glass-card {
             background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(12px);
@@ -79,6 +81,16 @@
             box-shadow: 0 15px 35px -5px rgba(123, 45, 57, 0.08), 0 5px 15px -3px rgba(0, 0, 0, 0.04);
         }
 
+        /* Custom scrollbar */
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: rgba(197, 160, 89, 0.4);
+            border-radius: 9999px;
+        }
+
+        /* Smooth slide-fade animations */
         .slide-in {
             animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -92,6 +104,14 @@
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+        }
+
+        .gold-glow-hover:hover {
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.4);
         }
     </style>
 </head>
@@ -110,32 +130,40 @@
                 <p class="text-[10px] tracking-widest text-gold-600 uppercase font-medium">Encuentro Sagrado</p>
             </div>
         </div>
+
+        <!-- Audio Toggle Button -->
+        <button id="audio-toggle" onclick="toggleAmbientAudio()" class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-gold-300/50 text-wine-800 text-xs font-semibold hover:bg-wine-50 transition shadow-sm">
+            <i id="audio-icon" class="fas fa-volume-mute text-gold-600"></i>
+            <span id="audio-label" class="hidden sm:inline">Música Sacra</span>
+        </button>
     </header>
 
     <main class="relative z-10 flex-grow flex items-center justify-center p-4 md:p-6">
         <div class="w-full max-w-2xl">
             
+            <!-- Progress Bar Container -->
+            <div id="progress-container" class="mb-4 transition-all duration-300 opacity-100">
+                <div class="flex justify-between items-center text-xs font-semibold text-wine-800/70 mb-1.5 px-1">
+                    <span id="step-counter">Paso 1 de 9</span>
+                    <span id="percentage-indicator">11%</span>
+                </div>
+                <div class="w-full h-2 bg-stone-200/80 rounded-full overflow-hidden p-0.5 border border-stone-200">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-wine-700 via-wine-600 to-gold-500 rounded-full transition-all duration-500 ease-out" style="width: 11%;"></div>
+                </div>
+            </div>
+
             <!-- Main Interactive Card -->
             <div id="app-card" class="glass-card rounded-3xl p-6 md:p-10 transition-all duration-300 relative overflow-hidden">
-                <div class="flex justify-between items-center mb-6">
+                <!-- Inner Back Button & Step Header -->
+                <div id="card-nav" class="flex justify-between items-center mb-6 hidden">
+                    <button onclick="previousStep()" class="text-xs font-semibold text-stone-500 hover:text-wine-800 flex items-center transition group">
+                        <i class="fas fa-chevron-left mr-1.5 transition-transform group-hover:-translate-x-1"></i> Anterior
+                    </button>
                     <span class="text-[11px] font-bold tracking-widest uppercase text-gold-600 bg-gold-400/10 px-3 py-1 rounded-full border border-gold-500/20">Reflexión Espiritual</span>
                 </div>
 
-                <!-- Dynamic Content Container / Video Zone -->
-                <div id="game-zone" class="slide-in flex flex-col items-center">
-                    <h2 class="font-cinzel text-xl md:text-2xl font-bold text-wine-900 text-center mb-2">El niño y el Rey</h2>
-                    <p class="font-serif italic text-stone-600 text-center text-sm mb-6">Preparando el alma para la adoración</p>
-                    
-                    <!-- REPRODUCTOR DE VIDEO CORREGIDO -->
-                    <div class="w-full aspect-video rounded-xl overflow-hidden border border-gold-500/30 shadow-lg bg-black relative z-20">
-                        <video class="w-full h-full object-cover" controls playsinline preload="auto">
-                            <!-- REEMPLAZA EL CONTENIDO DE src CON LA RUTA REAL DE TU VIDEO -->
-                            <source src="videos/el-nino-y-el-rey.mp4" type="video/mp4">
-                            <source src="videos/el-nino-y-el-rey.webm" type="video/webm">
-                            Tu navegador no soporta la reproducción de videos.
-                        </video>
-                    </div>
-                </div>
+                <!-- Dynamic Content Container -->
+                <div id="game-zone" class="slide-in"></div>
             </div>
             
             <!-- Footer Quote / Subtext -->
@@ -150,5 +178,557 @@
         &copy; HEKAL - Congreso de Adoración y Alabanza
     </footer>
 
+    <script>
+        const questions = [
+            { 
+                id: 0, 
+                type: "name", 
+                title: "Bienvenido a HEKAL", 
+                subtitle: "Comencemos este camino juntos",
+                q: "¿Cómo te llamas? Nos encantaría conocerte y acompañarte en esta experiencia." 
+            },
+            { 
+                id: 1, 
+                type: "welcome", 
+                title: "Un viaje al corazón", 
+                subtitle: "Preparando el alma",
+                text: "Gracias por regalarte este tiempo. Tus respuestas son un puente de oración sincero." 
+            },
+            { 
+                id: 2, 
+                type: "anecdote", 
+                title: "El niño y el Rey", 
+                subtitle: "Historia de fe radiante",
+                context: "En una capilla de adoración perpetua, un niño de 10 años velaba a las 2 a.m. cuando hombres armados irrumpieron violentamente. En lugar de huir, el niño, señalando la custodia con calma, les dijo: 'No hagan ruido, que el Rey está durmiendo'. Aquella fe pura quebrantó a los hombres, quienes soltaron sus armas y se entregaron.", 
+                q: "¿Qué te enseña esta historia sobre la presencia de Jesús en el Sagrario?", 
+                o: [
+                    "Que Dios tiene un poder inmenso para proteger a los suyos", 
+                    "Que el Sagrario es un lugar de paz y autoridad real que transforma corazones", 
+                    "Que la inocencia nos permite ver lo invisible", 
+                    "Que nunca debemos perder la esperanza ante el peligro"
+                ] 
+            },
+            { 
+                id: 3, 
+                type: "anecdote", 
+                title: "El secreto de Calcuta", 
+                subtitle: "La fuente inagotable",
+                context: "La Santa Madre Teresa de Calcuta tenía un secreto para servir a los moribundos sin perder la sonrisa ni desfallecer: sus religiosas pasaban horas de rodillas frente al Santísimo. 'No se puede dar un amor sobrehumano si primero no se recarga el alma ante el Pan Vivo'.", 
+                q: "¿Por qué crees que la oración ante el Sagrario cambiaba la vida de las misioneras?", 
+                o: [
+                    "Porque en el silencio recibían el verdadero consuelo del alma", 
+                    "Porque les daba la fuerza del amor divino para superar su cansancio", 
+                    "Porque les recordaba el valor infinito de cada vida humana", 
+                    "Porque el encuentro con Dios restaura la alegría perdida"
+                ] 
+            },
+            { 
+                id: 4, 
+                type: "anecdote", 
+                title: "La luz que rompe el lodo", 
+                subtitle: "Mirada que sana",
+                context: "Un joven atrapado en adicciones se sentía indigno de entrar a una iglesia. Un sacerdote le aconsejó: 'Solo siéntate y déjate mirar por Él'. El joven sintió una calidez física, como si 'una luz rompiera su lodo interno'. Ese único minuto bastó para iniciar su sanación.", 
+                q: "¿Cómo te sientes tú cuando buscas ese espacio de silencio ante Dios?", 
+                o: [
+                    "Siento paz, aunque a veces me cuesta acallar los pensamientos", 
+                    "A veces me siento abrumado o indigno de acercarme", 
+                    "Siento deseo de reencontrarme con esa paz", 
+                    "Experimento consuelo y una profunda calma"
+                ] 
+            },
+            { 
+                id: 5, 
+                type: "choice", 
+                title: "Tu llamado actual", 
+                subtitle: "Escuchando tu interior",
+                q: "¿Qué es lo que más anhela tu corazón en este momento de tu vida?", 
+                o: [
+                    "Sanar heridas y ataduras del pasado", 
+                    "Encontrar dirección y propósito de vida", 
+                    "Experimentar un amor y entrega más profunda", 
+                    "Tener paz interior en medio de la tempestad"
+                ] 
+            },
+            { 
+                id: 6, 
+                type: "text", 
+                title: "Tu oración personal", 
+                subtitle: "Abre tu corazón",
+                q: "Si pudieras estar a solas con Jesús frente al Sagrario ahora mismo, ¿qué le dirías o le pedirías?" 
+            },
+            { 
+                id: 7, 
+                type: "video", 
+                title: "Mira este momento sagrado", 
+                subtitle: "Un minuto de luz",
+                q: "Observa este breve mensaje (59 seg) e inspírate. ¿Qué resonó más dentro de ti al verlo?", 
+                video: "0RwdHM27Z_w" 
+            },
+            { 
+                id: 8, 
+                type: "reveal", 
+                title: "El Encuentro", 
+                subtitle: "Conociendo HEKAL",
+                q: "¿Habías escuchado antes sobre HEKAL, el Congreso de Adoración y Alabanza?", 
+                o: [
+                    "¡Sí! Y me encantaría vivir esta experiencia", 
+                    "No lo conocía, pero me llama mucho la atención", 
+                    "He escuchado un poco y quiero saber más"
+                ] 
+            }
+        ];
+
+        /* Motivational quotes tailored to choice in Question 5 */
+        const spiritualVerses = {
+            "Sanar heridas y ataduras del pasado": {
+                verse: "«Sáname, Señor, y seré sanado; sálvame y seré salvo, porque tú eres mi alabanza.»",
+                ref: "Jeremías 17:14"
+            },
+            "Encontrar dirección y propósito de vida": {
+                verse: "«Yo sé los planes que tengo para vosotros —declara el Señor—, planes de bienestar y no de calamidad, para daros un futuro y una esperanza.»",
+                ref: "Jeremías 29:11"
+            },
+            "Experimentar un amor y entrega más profunda": {
+                verse: "«Nosotros amamos porque Él nos amó primero. El amor perfecto echa fuera todo temor.»",
+                ref: "1 Juan 4:18-19"
+            },
+            "Tener paz interior en medio de la tempestad": {
+                verse: "«La paz os dejo, mi paz os doy; no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo.»",
+                ref: "Juan 14:27"
+            }
+        };
+
+        let state = { 
+            currentQ: 0, 
+            responses: {}, 
+            userName: "" 
+        };
+
+        const gameZone = document.getElementById('game-zone');
+        const cardNav = document.getElementById('card-nav');
+        const progressBar = document.getElementById('progress-bar');
+        const stepCounter = document.getElementById('step-counter');
+        const percentageIndicator = document.getElementById('percentage-indicator');
+        const progressContainer = document.getElementById('progress-container');
+
+        function render() {
+            const item = questions[state.currentQ];
+            
+            if (!item) {
+                return renderResult();
+            }
+
+            // Update Header progress
+            const currentStep = state.currentQ + 1;
+            const totalSteps = questions.length;
+            const percentage = Math.round((currentStep / totalSteps) * 100);
+
+            stepCounter.textContent = `Paso ${currentStep} de ${totalSteps}`;
+            percentageIndicator.textContent = `${percentage}%`;
+            progressBar.style.width = `${percentage}%`;
+
+            // Toggle Card Header
+            if (state.currentQ > 0) {
+                cardNav.classList.remove('hidden');
+            } else {
+                cardNav.classList.add('hidden');
+            }
+
+            // Animate card content transition
+            gameZone.classList.remove('slide-in');
+            void gameZone.offsetWidth; // Trigger reflow
+            gameZone.classList.add('slide-in');
+
+            let html = `
+                <div class="mb-6">
+                    <span class="text-xs font-semibold text-wine-600 uppercase tracking-wider block mb-1">${item.subtitle}</span>
+                    <h2 class="text-2xl md:text-3xl text-wine-900 font-serif font-bold leading-tight">${item.title}</h2>
+                </div>
+            `;
+
+            if (item.type === "name") {
+                html += `
+                    <p class="text-stone-600 mb-6 leading-relaxed">${item.q}</p>
+                    <div class="space-y-4">
+                        <div class="relative">
+                            <i class="fas fa-user text-gold-500 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                            <input type="text" id="userName" value="${state.userName || ''}" 
+                                class="w-full pl-11 pr-4 py-3.5 bg-stone-50 border border-stone-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-wine-700 focus:border-wine-700 outline-none transition text-stone-800 font-medium" 
+                                placeholder="Escribe tu nombre o apodo..."
+                                onkeypress="if(event.key==='Enter') handleName()">
+                        </div>
+                        <button onclick="handleName()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 group">
+                            <span>Continuar</span>
+                            <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (item.type === "welcome") {
+                html += `
+                    <div class="bg-wine-50 border border-wine-100 p-6 rounded-2xl mb-6 relative">
+                        <i class="fas fa-quote-left text-wine-200 text-3xl absolute top-4 left-4"></i>
+                        <p class="text-lg text-wine-900 font-serif italic relative z-10 leading-relaxed pl-2">
+                            "${state.userName}, gracias por tu sinceridad. Estamos listos para comenzar este tiempo de reflexión profunda."
+                        </p>
+                    </div>
+                    <button onclick="next()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                        <span>Iniciar Experiencia</span>
+                        <i class="fas fa-dove text-gold-300 ml-1"></i>
+                    </button>
+                `;
+            } else if (item.type === "anecdote") {
+                html += `
+                    <div class="mb-6 bg-stone-50/80 p-5 rounded-2xl border-l-4 border-gold-500 text-stone-700 text-sm leading-relaxed italic shadow-inner">
+                        "${item.context}"
+                    </div>
+                    <p class="text-stone-900 font-semibold mb-4 text-base md:text-lg leading-snug">${item.q}</p>
+                    <div class="space-y-3">
+                        ${item.o.map((o, idx) => `
+                            <button onclick="handleChoice('${escapeQuotes(o)}')" class="w-full p-4 bg-white hover:bg-wine-50/60 border ${state.responses[state.currentQ] === o ? 'border-wine-700 bg-wine-50/80' : 'border-stone-200'} rounded-2xl text-left transition flex items-start space-x-3 group">
+                                <span class="w-6 h-6 rounded-full bg-stone-100 text-stone-500 group-hover:bg-wine-700 group-hover:text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 transition-colors">${String.fromCharCode(65 + idx)}</span>
+                                <span class="text-stone-800 text-sm md:text-base font-medium leading-relaxed">${o}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (item.type === "choice" || item.type === "reveal") {
+                html += `
+                    <p class="text-stone-900 font-semibold mb-5 text-base md:text-lg">${item.q}</p>
+                    <div class="space-y-3">
+                        ${item.o.map((o, idx) => `
+                            <button onclick="handleChoice('${escapeQuotes(o)}')" class="w-full p-4 bg-white hover:bg-wine-50/60 border ${state.responses[state.currentQ] === o ? 'border-wine-700 bg-wine-50/80' : 'border-stone-200'} rounded-2xl text-left transition flex items-start space-x-3 group">
+                                <span class="w-6 h-6 rounded-full bg-stone-100 text-stone-500 group-hover:bg-wine-700 group-hover:text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 transition-colors">${String.fromCharCode(65 + idx)}</span>
+                                <span class="text-stone-800 font-medium text-sm md:text-base">${o}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (item.type === "text") {
+                html += `
+                    <p class="text-stone-900 font-semibold mb-4 text-base md:text-lg">${item.q}</p>
+                    <div class="mb-4">
+                        <textarea id="textResponse" rows="4" 
+                            class="w-full p-4 bg-stone-50 border border-stone-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-wine-700 focus:border-wine-700 outline-none transition text-stone-800 font-medium text-sm leading-relaxed" 
+                            placeholder="Escribe con confianza tu oración o deseo...">${state.responses[state.currentQ] || ''}</textarea>
+                    </div>
+                    <button onclick="handleText()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                        <span>Guardar petición</span>
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+                `;
+            } else if (item.type === "video") {
+                html += `
+                    <div class="aspect-video w-full rounded-2xl overflow-hidden shadow-md mb-5 bg-black border border-stone-200">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/${item.video}?si=J-GC6XoZVXGxQWyY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                    </div>
+                    <p class="text-stone-900 font-semibold mb-3 text-base">${item.q}</p>
+                    <textarea id="textResponse" rows="3" 
+                        class="w-full p-4 bg-stone-50 border border-stone-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-wine-700 focus:border-wine-700 outline-none transition text-stone-800 text-sm mb-4" 
+                        placeholder="Escribe lo que este video te hace sentir...">${state.responses[state.currentQ] || ''}</textarea>
+                    <button onclick="handleText()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                        <span>Continuar</span>
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </button>
+                `;
+            }
+
+            gameZone.innerHTML = html;
+        }
+
+        /* Utility to escape quotes safely for inline HTML handlers */
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
+        function handleName() { 
+            const input = document.getElementById('userName');
+            const val = input ? input.value.trim() : '';
+            if(val) { 
+                state.userName = val; 
+                next(); 
+            } else {
+                input.classList.add('border-red-400');
+                input.focus();
+            }
+        }
+
+        function next() { 
+            state.currentQ++; 
+            render(); 
+        }
+
+        function previousStep() {
+            if (state.currentQ > 0) {
+                state.currentQ--;
+                render();
+            }
+        }
+
+        function handleChoice(val) { 
+            state.responses[state.currentQ] = val; 
+            next(); 
+        }
+
+        function handleText() { 
+            const input = document.getElementById('textResponse');
+            const val = input ? input.value.trim() : '';
+            state.responses[state.currentQ] = val || "Sintiendo en silencio"; 
+            next(); 
+        }
+
+        function renderResult() {
+            progressContainer.classList.add('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
+            cardNav.classList.add('hidden');
+
+            const userNeed = state.responses[5] || "Tener paz interior en medio de la tempestad";
+            const verseObj = spiritualVerses[userNeed] || spiritualVerses["Tener paz interior en medio de la tempestad"];
+            const userPrayer = state.responses[6] || "";
+
+            let html = `
+                <div class="text-center slide-in">
+                    <div class="w-16 h-16 bg-wine-800 text-gold-400 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-gold-400/50 shadow-lg text-2xl font-cinzel">
+                        ✝
+                    </div>
+                    <span class="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-400/10 px-3 py-1 rounded-full border border-gold-500/20">Tu Refugio Espiritual</span>
+                    <h2 class="text-3xl font-serif font-bold text-wine-900 mt-2 mb-2">¡Hola, ${state.userName}!</h2>
+                    <p class="text-stone-600 text-sm max-w-md mx-auto mb-6">HEKAL está diseñado para ser la respuesta a lo que hoy busca tu corazón.</p>
+
+                    <!-- Customized Prayer Card Cardboard -->
+                    <div id="reflection-card" class="bg-gradient-to-b from-wine-900 to-wine-800 text-stone-100 p-6 md:p-8 rounded-3xl shadow-xl text-left border border-gold-500/30 relative overflow-hidden mb-6">
+                        <div class="absolute -right-10 -top-10 w-36 h-36 bg-gold-400/10 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-3">
+                            <div>
+                                <h3 class="font-cinzel text-xs tracking-widest text-gold-400 uppercase">Tarjeta de Reflexión</h3>
+                                <p class="text-lg font-serif font-bold text-white">${state.userName}</p>
+                            </div>
+                            <span class="text-xs text-stone-300 italic font-serif">HEKAL 2026</span>
+                        </div>
+
+                        <!-- Customized Scripture -->
+                        <div class="mb-5">
+                            <p class="text-xs text-gold-400 font-semibold mb-1 uppercase tracking-wider">Promesa para ti:</p>
+                            <p class="font-serif italic text-sm md:text-base text-stone-200 leading-relaxed">
+                                ${verseObj.verse}
+                            </p>
+                            <p class="text-right text-xs text-gold-300 font-medium mt-1">— ${verseObj.ref}</p>
+                        </div>
+
+                        ${userPrayer ? `
+                        <div class="bg-black/20 backdrop-blur-sm p-4 rounded-xl border border-white/10">
+                            <p class="text-xs text-gold-400 font-semibold mb-1 uppercase tracking-wider">Tu Petición Sincera:</p>
+                            <p class="text-xs md:text-sm text-stone-200 italic">"${userPrayer}"</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- What is HEKAL info box -->
+                    <div class="bg-stone-50 border border-stone-200 p-5 rounded-2xl text-left mb-6">
+                        <h4 class="font-serif font-bold text-wine-900 text-base mb-2 flex items-center">
+                            <i class="fas fa-church text-gold-500 mr-2"></i> ¿Qué es HEKAL?
+                        </h4>
+                        <p class="text-stone-700 text-xs md:text-sm leading-relaxed mb-2">
+                            <strong>HEKAL</strong> es el Congreso de Adoración y Alabanza donde, al igual que en las historias que leíste, el Sagrario se convierte en el centro vivo de tu historia.
+                        </p>
+                        <p class="text-stone-600 text-xs italic">
+                            Un espacio para adorar, sanar tus cargas y ser transformado en la presencia de Dios.
+                        </p>
+                    </div>
+
+                    <!-- Call To Action -->
+                    <div class="mt-4">
+                        <button onclick="shareWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition flex items-center justify-center space-x-3 text-base md:text-lg">
+                            <i class="fab fa-whatsapp text-2xl"></i>
+                            <span>Compartir resultado a través de WhatsApp</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            gameZone.innerHTML = html;
+        }
+
+        function shareWhatsApp() {
+            const userNeed = state.responses[5] || "Tener paz interior";
+            const userPrayer = state.responses[6] || "";
+            let text = `✨ *Mi Encuentro Sagrado en HEKAL* ✨\n\n`;
+            text += `👤 *Nombre:* ${state.userName}\n`;
+            text += `🙏 *Lo que anhela mi corazón:* ${userNeed}\n`;
+            if (userPrayer) {
+                text += `🕊️ *Mi oración:* "${userPrayer}"\n`;
+            }
+            text += `\nDescubre más sobre HEKAL, el Congreso de Adoración y Alabanza. 🕊️✨`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        let audioCtx = null;
+        let isAudioPlaying = false;
+        let masterGain = null;
+        let osc1 = null;
+        let osc2 = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+
+                // Master gain with soft volume
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+                // Low pass filter for soft warm tone
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(320, audioCtx.currentTime);
+
+                // Two warm sine oscillators for chord pad
+                osc1 = audioCtx.createOscillator();
+                osc2 = audioCtx.createOscillator();
+
+                osc1.type = 'sine';
+                osc2.type = 'sine';
+
+                // Tuned to calm meditative interval (D3 & A3)
+                osc1.frequency.setValueAtTime(146.83, audioCtx.currentTime); 
+                osc2.frequency.setValueAtTime(220.00, audioCtx.currentTime); 
+
+                osc1.connect(filter);
+                osc2.connect(filter);
+                filter.connect(masterGain);
+                masterGain.connect(audioCtx.destination);
+
+                osc1.start();
+                osc2.start();
+            }
+        }
+
+        function playAmbientAudio() {
+            try {
+                initAudioContext();
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                if (masterGain) {
+                    masterGain.gain.setTargetAtTime(0.06, audioCtx.currentTime, 1);
+                }
+                isAudioPlaying = true;
+                updateAudioUI(true);
+            } catch (e) {
+                console.log("Esperando interacción para reproducir audio:", e);
+            }
+        }
+
+        function updateAudioUI(playing) {
+            const icon = document.getElementById('audio-icon');
+            const label = document.getElementById('audio-label');
+            if (icon) {
+                icon.className = playing 
+                    ? "fas fa-volume-up text-gold-500 animate-pulse" 
+                    : "fas fa-volume-mute text-stone-400";
+            }
+            if (label) {
+                label.textContent = playing ? "Música Activa" : "Música Sacra";
+            }
+        }
+
+        function toggleAmbientAudio() {
+            if (!isAudioPlaying) {
+                playAmbientAudio();
+            } else {
+                if (masterGain && audioCtx) {
+                    masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
+                }
+                isAudioPlaying = false;
+                updateAudioUI(false);
+            }
+        }
+
+        // Activación automática al cargar y/o al primer toque/clic
+        function setupAutoAudio() {
+            playAmbientAudio();
+
+            const startOnInteraction = () => {
+                if (!isAudioPlaying) {
+                    playAmbientAudio();
+                }
+                window.removeEventListener('click', startOnInteraction);
+                window.removeEventListener('touchstart', startOnInteraction);
+                window.removeEventListener('keydown', startOnInteraction);
+            };
+
+            window.addEventListener('click', startOnInteraction);
+            window.addEventListener('touchstart', startOnInteraction);
+            window.addEventListener('keydown', startOnInteraction);
+        }
+
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 50;
+                this.radius = Math.random() * 2 + 0.8;
+                this.speed = Math.random() * 0.4 + 0.15;
+                this.alpha = Math.random() * 0.4 + 0.1;
+                this.fade = Math.random() * 0.003 + 0.001;
+            }
+
+            update() {
+                this.y -= this.speed;
+                this.x += Math.sin(this.y * 0.01) * 0.2;
+
+                if (this.y < -10) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(197, 160, 89, ${this.alpha})`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "rgba(197, 160, 89, 0.5)";
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(window.innerWidth / 25), 40);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.onload = function() {
+            initParticles();
+            animateParticles();
+            render();
+            setupAutoAudio();
+        };
+    </script>
 </body>
 </html>
