@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEKAL: Tu Encuentro Sagrado</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wine: {
+                            50: '#fcf6f6',
+                            100: '#f8ecec',
+                            600: '#8c3b47',
+                            700: '#7b2d39',
+                            800: '#64222e',
+                            900: '#43141c',
+                        },
+                        gold: {
+                            300: '#e2c887',
+                            400: '#d4af37',
+                            500: '#c5a059',
+                            600: '#a37e3a',
+                        },
+                        cream: '#faf8f5',
+                        charcoal: '#231f20'
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-cream: #faf8f5;
+            --wine-main: #7b2d39;
+            --gold-accent: #c5a059;
+        }
+
+        body {
+            background-color: var(--bg-cream);
+            color: #231f20;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            box-shadow: 0 15px 35px -5px rgba(123, 45, 57, 0.08), 0 5px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-wine-100 selection:text-wine-800">
+
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Top Navigation / Header -->
+    <header class="relative z-10 w-full max-w-4xl mx-auto px-4 pt-6 pb-2 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-wine-800 flex items-center justify-center text-gold-400 font-cinzel text-xl font-bold border border-gold-500/40 shadow-sm">
+                ✝
+            </div>
+            <div>
+                <h1 class="font-cinzel text-lg md:text-xl font-bold tracking-widest text-wine-900 leading-none">HEKAL</h1>
+                <p class="text-[10px] tracking-widest text-gold-600 uppercase font-medium">Encuentro Sagrado</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 flex-grow flex items-center justify-center p-4 md:p-6">
+        <div class="w-full max-w-2xl">
+            
+            <!-- Main Interactive Card -->
+            <div id="app-card" class="glass-card rounded-3xl p-6 md:p-10 transition-all duration-300 relative overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-[11px] font-bold tracking-widest uppercase text-gold-600 bg-gold-400/10 px-3 py-1 rounded-full border border-gold-500/20">Reflexión Espiritual</span>
+                </div>
+
+                <!-- Dynamic Content Container / Video Zone -->
+                <div id="game-zone" class="slide-in flex flex-col items-center">
+                    <h2 class="font-cinzel text-xl md:text-2xl font-bold text-wine-900 text-center mb-2">El niño y el Rey</h2>
+                    <p class="font-serif italic text-stone-600 text-center text-sm mb-6">Preparando el alma para la adoración</p>
+                    
+                    <!-- REPRODUCTOR DE VIDEO CORREGIDO -->
+                    <div class="w-full aspect-video rounded-xl overflow-hidden border border-gold-500/30 shadow-lg bg-black relative z-20">
+                        <video class="w-full h-full object-cover" controls playsinline preload="auto">
+                            <!-- REEMPLAZA EL CONTENIDO DE src CON LA RUTA REAL DE TU VIDEO -->
+                            <source src="videos/el-nino-y-el-rey.mp4" type="video/mp4">
+                            <source src="videos/el-nino-y-el-rey.webm" type="video/webm">
+                            Tu navegador no soporta la reproducción de videos.
+                        </video>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Quote / Subtext -->
+            <p class="text-center text-xs text-stone-600 mt-4 font-serif italic">
+                "Un espacio de paz para escuchar la voz que calma tus tempestades."
+            </p>
+        </div>
+    </main>
+
+    <!-- Footer Copyright -->
+    <footer class="relative z-10 py-3 text-center text-xs text-stone-600">
+        &copy; HEKAL - Congreso de Adoración y Alabanza
+    </footer>
+
+</body>
+</html>
