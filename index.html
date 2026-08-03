@@ -180,22 +180,26 @@
 
     <script>
         const questions = [
+            {
+                id: 0,
+                type: "start"
+            },
             { 
-                id: 0, 
+                id: 1, 
                 type: "name", 
                 title: "Bienvenido a HEKAL", 
                 subtitle: "Comencemos este camino juntos",
                 q: "¿Cómo te llamas? Nos encantaría conocerte y acompañarte en esta experiencia." 
             },
             { 
-                id: 1, 
+                id: 2, 
                 type: "welcome", 
                 title: "Un viaje al corazón", 
                 subtitle: "Preparando el alma",
                 text: "Gracias por regalarte este tiempo. Tus respuestas son un puente de oración sincero." 
             },
             { 
-                id: 2, 
+                id: 3, 
                 type: "anecdote", 
                 title: "El niño y el Rey", 
                 subtitle: "Historia de fe radiante",
@@ -209,7 +213,7 @@
                 ] 
             },
             { 
-                id: 3, 
+                id: 4, 
                 type: "anecdote", 
                 title: "El secreto de Calcuta", 
                 subtitle: "La fuente inagotable",
@@ -223,7 +227,7 @@
                 ] 
             },
             { 
-                id: 4, 
+                id: 5, 
                 type: "anecdote", 
                 title: "La luz que rompe el lodo", 
                 subtitle: "Mirada que sana",
@@ -237,7 +241,7 @@
                 ] 
             },
             { 
-                id: 5, 
+                id: 6, 
                 type: "choice", 
                 title: "Tu llamado actual", 
                 subtitle: "Escuchando tu interior",
@@ -250,14 +254,14 @@
                 ] 
             },
             { 
-                id: 6, 
+                id: 7, 
                 type: "text", 
                 title: "Tu oración personal", 
                 subtitle: "Abre tu corazón",
                 q: "Si pudieras estar a solas con Jesús frente al Sagrario ahora mismo, ¿qué le dirías o le pedirías?" 
             },
             { 
-                id: 7, 
+                id: 8, 
                 type: "video", 
                 title: "Mira este momento sagrado", 
                 subtitle: "Un minuto de luz",
@@ -265,7 +269,7 @@
                 video: "0RwdHM27Z_w" 
             },
             { 
-                id: 8, 
+                id: 9, 
                 type: "reveal", 
                 title: "El Encuentro", 
                 subtitle: "Conociendo HEKAL",
@@ -278,7 +282,6 @@
             }
         ];
 
-        /* Motivational quotes tailored to choice in Question 5 */
         const spiritualVerses = {
             "Sanar heridas y ataduras del pasado": {
                 verse: "«Sáname, Señor, y seré sanado; sálvame y seré salvo, porque tú eres mi alabanza.»",
@@ -318,20 +321,26 @@
                 return renderResult();
             }
 
-            // Update Header progress
-            const currentStep = state.currentQ + 1;
-            const totalSteps = questions.length;
-            const percentage = Math.round((currentStep / totalSteps) * 100);
-
-            stepCounter.textContent = `Paso ${currentStep} de ${totalSteps}`;
-            percentageIndicator.textContent = `${percentage}%`;
-            progressBar.style.width = `${percentage}%`;
-
-            // Toggle Card Header
-            if (state.currentQ > 0) {
-                cardNav.classList.remove('hidden');
-            } else {
+            // Ocultar barra de progreso en la pantalla de inicio
+            if (item.type === "start") {
+                progressContainer.classList.add('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
                 cardNav.classList.add('hidden');
+            } else {
+                progressContainer.classList.remove('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
+                // Calculate Header progress (offset by 1 because of start screen)
+                const currentStep = state.currentQ;
+                const totalSteps = questions.length - 1;
+                const percentage = Math.round((currentStep / totalSteps) * 100);
+
+                stepCounter.textContent = `Paso ${currentStep} de ${totalSteps}`;
+                percentageIndicator.textContent = `${percentage}%`;
+                progressBar.style.width = `${percentage}%`;
+
+                if (state.currentQ > 1) {
+                    cardNav.classList.remove('hidden');
+                } else {
+                    cardNav.classList.add('hidden');
+                }
             }
 
             // Animate card content transition
@@ -339,14 +348,33 @@
             void gameZone.offsetWidth; // Trigger reflow
             gameZone.classList.add('slide-in');
 
-            let html = `
-                <div class="mb-6">
-                    <span class="text-xs font-semibold text-wine-600 uppercase tracking-wider block mb-1">${item.subtitle}</span>
-                    <h2 class="text-2xl md:text-3xl text-wine-900 font-serif font-bold leading-tight">${item.title}</h2>
-                </div>
-            `;
+            let html = ``;
 
-            if (item.type === "name") {
+            if (item.type !== "start") {
+                html += `
+                    <div class="mb-6">
+                        <span class="text-xs font-semibold text-wine-600 uppercase tracking-wider block mb-1">${item.subtitle}</span>
+                        <h2 class="text-2xl md:text-3xl text-wine-900 font-serif font-bold leading-tight">${item.title}</h2>
+                    </div>
+                `;
+            }
+
+            if (item.type === "start") {
+                html += `
+                    <div class="text-center py-4">
+                        <div class="w-20 h-20 bg-wine-800 text-gold-400 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-gold-400/50 shadow-lg text-4xl font-cinzel">
+                            ✝
+                        </div>
+                        <h2 class="text-3xl md:text-4xl text-wine-900 font-serif font-bold leading-tight mb-4">HEKAL</h2>
+                        <h3 class="text-lg text-wine-700 font-medium mb-6">Tu Encuentro Sagrado</h3>
+                        <p class="text-stone-600 mb-8 leading-relaxed max-w-md mx-auto text-sm md:text-base">Un espacio de paz para escuchar la voz que calma tus tempestades. <br><br><i class="fas fa-volume-up text-gold-500 mr-2"></i><i>Te sugerimos habilitar el volumen para vivir la experiencia.</i></p>
+                        <button onclick="handleStart()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 group">
+                            <span>Iniciar Experiencia</span>
+                            <i class="fas fa-play text-xs group-hover:translate-x-1 transition-transform ml-2"></i>
+                        </button>
+                    </div>
+                `;
+            } else if (item.type === "name") {
                 html += `
                     <p class="text-stone-600 mb-6 leading-relaxed">${item.q}</p>
                     <div class="space-y-4">
@@ -372,7 +400,7 @@
                         </p>
                     </div>
                     <button onclick="next()" class="w-full bg-wine-700 hover:bg-wine-800 text-white py-4 rounded-2xl font-semibold shadow-md transition flex items-center justify-center space-x-2">
-                        <span>Iniciar Experiencia</span>
+                        <span>Siguiente</span>
                         <i class="fas fa-dove text-gold-300 ml-1"></i>
                     </button>
                 `;
@@ -435,9 +463,14 @@
             gameZone.innerHTML = html;
         }
 
-        /* Utility to escape quotes safely for inline HTML handlers */
         function escapeQuotes(str) {
             return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
+        function handleStart() {
+            // Reproducir música desde el inicio exacto con el click de Iniciar
+            playAmbientAudio(true);
+            next();
         }
 
         function handleName() { 
@@ -458,7 +491,7 @@
         }
 
         function previousStep() {
-            if (state.currentQ > 0) {
+            if (state.currentQ > 1) {
                 state.currentQ--;
                 render();
             }
@@ -480,9 +513,9 @@
             progressContainer.classList.add('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
             cardNav.classList.add('hidden');
 
-            const userNeed = state.responses[5] || "Tener paz interior en medio de la tempestad";
+            const userNeed = state.responses[6] || "Tener paz interior en medio de la tempestad";
             const verseObj = spiritualVerses[userNeed] || spiritualVerses["Tener paz interior en medio de la tempestad"];
-            const userPrayer = state.responses[6] || "";
+            const userPrayer = state.responses[7] || "";
 
             let html = `
                 <div class="text-center slide-in">
@@ -549,8 +582,8 @@
         }
 
         function shareWhatsApp() {
-            const userNeed = state.responses[5] || "Tener paz interior";
-            const userPrayer = state.responses[6] || "";
+            const userNeed = state.responses[6] || "Tener paz interior";
+            const userPrayer = state.responses[7] || "";
             let text = `✨ *Mi Encuentro Sagrado en HEKAL* ✨\n\n`;
             text += `👤 *Nombre:* ${state.userName}\n`;
             text += `🙏 *Lo que anhela mi corazón:* ${userNeed}\n`;
@@ -575,7 +608,7 @@
                 isAudioPlaying = true;
                 updateAudioUI(true);
             }).catch(e => {
-                console.log("El navegador restringió el autoplay directo, se activará en la primera interacción:", e);
+                console.log("El reproductor espera la interacción del usuario.", e);
                 isAudioPlaying = false;
                 updateAudioUI(false);
             });
@@ -606,23 +639,6 @@
             } else {
                 pauseAmbientAudio();
             }
-        }
-
-        // Activación automática inmediata desde el inicio sin necesidad de clic manual
-        function setupAutoAudio() {
-            // Reproducir de inmediato desde el principio (segundo 0)
-            playAmbientAudio(true);
-
-            // Respaldo de activación en caso de restricciones del navegador
-            const unlockAudio = () => {
-                if (bgAudio.paused) {
-                    playAmbientAudio(false);
-                }
-            };
-
-            ['click', 'touchstart', 'pointerdown', 'keydown', 'mousemove', 'scroll'].forEach(evt => {
-                window.addEventListener(evt, unlockAudio, { passive: true });
-            });
         }
 
         const canvas = document.getElementById('particle-canvas');
@@ -691,7 +707,7 @@
             initParticles();
             animateParticles();
             render();
-            setupAutoAudio();
+            // La música iniciará al hacer clic en "Iniciar Experiencia"
         };
     </script>
 </body>
