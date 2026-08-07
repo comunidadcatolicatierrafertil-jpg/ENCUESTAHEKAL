@@ -1,6 +1,3 @@
-Aquí tienes el código completo restaurando exactamente la estructura de JavaScript y el HTML original, realizando **únicamente** la sustitución del texto que indicaste en el pie de página y en el párrafo de la pantalla de inicio:
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,6 +21,7 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
                         wine: {
                             50: '#fcf6f6',
                             100: '#f8ecec',
+                            200: '#f0d5d8',
                             600: '#8c3b47',
                             700: '#7b2d39',
                             800: '#64222e',
@@ -136,7 +134,7 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
 
         <!-- Audio Toggle Button -->
         <button id="audio-toggle" onclick="toggleAmbientAudio()" class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3.5 py-2 rounded-full border border-gold-300/50 text-wine-800 text-xs font-semibold hover:bg-wine-50 transition shadow-sm">
-            <i id="audio-icon" class="fas fa-volume-up text-gold-600 animate-pulse"></i>
+            <i id="audio-icon" class="fas fa-volume-mute text-stone-400"></i>
             <span id="audio-label" class="inline">HEKAL</span>
         </button>
     </header>
@@ -145,7 +143,7 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
         <div class="w-full max-w-2xl">
             
             <!-- Progress Bar Container -->
-            <div id="progress-container" class="mb-4 transition-all duration-300 opacity-100">
+            <div id="progress-container" class="mb-4 transition-all duration-300 opacity-0 h-0 overflow-hidden mb-0">
                 <div class="flex justify-between items-center text-xs font-semibold text-wine-800/70 mb-1.5 px-1">
                     <span id="step-counter">Paso 1 de 9</span>
                     <span id="percentage-indicator">11%</span>
@@ -310,12 +308,100 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
             userName: "" 
         };
 
+        const AUDIO_URL = "https://raw.githubusercontent.com/comunidadcatolicatierrafertil-jpg/audiohekal/main/0803.MP3";
+        const bgAudio = new Audio(AUDIO_URL);
+        bgAudio.loop = true;
+        let isAudioPlaying = false;
+
         const gameZone = document.getElementById('game-zone');
         const cardNav = document.getElementById('card-nav');
         const progressBar = document.getElementById('progress-bar');
         const stepCounter = document.getElementById('step-counter');
         const percentageIndicator = document.getElementById('percentage-indicator');
         const progressContainer = document.getElementById('progress-container');
+
+        // Audio controls
+        function toggleAmbientAudio() {
+            if (isAudioPlaying) {
+                bgAudio.pause();
+                isAudioPlaying = false;
+            } else {
+                bgAudio.play().then(() => {
+                    isAudioPlaying = true;
+                }).catch(e => console.log("Audio play constraint:", e));
+            }
+            updateAudioUI();
+        }
+
+        function playAmbientAudio(forcePlay = false) {
+            if (forcePlay || !isAudioPlaying) {
+                bgAudio.play().then(() => {
+                    isAudioPlaying = true;
+                    updateAudioUI();
+                }).catch(e => console.log("Audio play constraint:", e));
+            }
+        }
+
+        function updateAudioUI() {
+            const icon = document.getElementById('audio-icon');
+            const label = document.getElementById('audio-label');
+            if (!icon || !label) return;
+
+            if (isAudioPlaying) {
+                icon.className = "fas fa-volume-up text-gold-600 animate-pulse";
+                label.textContent = "Sonando";
+            } else {
+                icon.className = "fas fa-volume-mute text-stone-400";
+                label.textContent = "HEKAL";
+            }
+        }
+
+        // Background particles canvas setup
+        function initParticleCanvas() {
+            const canvas = document.getElementById('particle-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const particles = [];
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: Math.random() * 2 + 1,
+                    color: Math.random() > 0.5 ? 'rgba(197, 160, 89, ' : 'rgba(123, 45, 57, ',
+                    alpha: Math.random() * 0.35 + 0.1,
+                    speedY: - (Math.random() * 0.3 + 0.1),
+                    speedX: (Math.random() - 0.5) * 0.2
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    if (p.y < -10) p.y = height + 10;
+                    if (p.x < -10) p.x = width + 10;
+                    if (p.x > width + 10) p.x = -10;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color + p.alpha + ')';
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
 
         function render() {
             const item = questions[state.currentQ];
@@ -324,13 +410,12 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
                 return renderResult();
             }
 
-            // Ocultar barra de progreso en la pantalla de inicio
+            // Progress bar visibility
             if (item.type === "start") {
                 progressContainer.classList.add('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
                 cardNav.classList.add('hidden');
             } else {
                 progressContainer.classList.remove('opacity-0', 'h-0', 'overflow-hidden', 'mb-0');
-                // Calculate Header progress (offset by 1 because of start screen)
                 const currentStep = state.currentQ;
                 const totalSteps = questions.length - 1;
                 const percentage = Math.round((currentStep / totalSteps) * 100);
@@ -471,7 +556,6 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
         }
 
         function handleStart() {
-            // Reproducir música desde el inicio exacto con el click de Iniciar
             playAmbientAudio(true);
             next();
         }
@@ -597,10 +681,11 @@ Aquí tienes el código completo restaurando exactamente la estructura de JavaSc
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        const AUDIO_URL = "https://raw.githubusercontent.com/comunidadcatolicatierrafertil-jpg/audiohekal/main/0803.MP3";
-        const bgAudio = new Audio(AUDIO_URL);
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initParticleCanvas();
+            render();
+        });
     </script>
 </body>
 </html>
-
-```
